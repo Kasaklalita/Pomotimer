@@ -154,8 +154,8 @@ fun StageInfo() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "1/4", style = MaterialTheme.typography.titleLarge)
-        Text(text = "Reset", style = MaterialTheme.typography.titleMedium)
+        Text(text = "1/4", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
+        Text(text = "Reset", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 
