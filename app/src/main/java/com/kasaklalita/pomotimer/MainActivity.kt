@@ -2,6 +2,8 @@ package com.kasaklalita.pomotimer
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -14,14 +16,20 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kasaklalita.pomotimer.ui.theme.PomotimerTheme
 import androidx.compose.ui.text.style.TextAlign
+import com.kasaklalita.pomotimer.database.DatabaseHandler
+import com.kasaklalita.pomotimer.models.QuoteModel
 
 class MainActivity : ComponentActivity() {
+    private var dbHandler = DatabaseHandler(this)
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,8 +90,8 @@ class MainActivity : ComponentActivity() {
                                 }
                                 QuoteCard(
                                     "The quote of the day",
-                                    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.",
-                                    "Veniamin Polienko"
+                                    "theQuoteOfTheDay!!.quote",
+                                    "theQuoteOfTheDay!!.author"
                                 )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -113,93 +121,114 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun MainTimer() {
-    Button(
-        modifier = Modifier.size(200.dp),
-        shape = CircleShape,
-        onClick = {}) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    @Preview
+    @Composable
+    fun ResumeButton() {
+        OutlinedButton(
+            onClick = {
+//                val newQuote = QuoteModel(0, "Lorem ipsum dolor sit amet", "Veniamin Polienko")
+//                val addQuote = dbHandler.addQuote(newQuote)
+
+            },
+            shape = CircleShape,
+            contentPadding = PaddingValues(8.dp),
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         ) {
-            Text(text = "25:00", style = MaterialTheme.typography.headlineLarge)
-            Text(text = "FOCUS", style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.size(65.dp),
+            )
         }
     }
-}
 
-@Preview
-@Composable
-fun ResumeButton() {
-    OutlinedButton(
-        onClick = {},
-        shape = CircleShape,
-        contentPadding = PaddingValues(8.dp),
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-    ) {
-        Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = null,
-            modifier = Modifier.size(65.dp),
-        )
+    @Composable
+    fun MainTimer() {
+        Button(
+            modifier = Modifier.size(200.dp),
+            shape = CircleShape,
+            onClick = {
+                val quotesList: ArrayList<QuoteModel> = dbHandler.getQuotesList()
+                if (quotesList.size > 0) {
+                    Toast.makeText(this, "Quote: ${quotesList[0]}", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, "No quotes", Toast.LENGTH_LONG).show()
+                }
+            }) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "25:00", style = MaterialTheme.typography.headlineLarge)
+                Text(text = "FOCUS", style = MaterialTheme.typography.titleMedium)
+            }
+        }
     }
-}
 
-@Composable
-fun StageInfo() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(text = "1/4", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
-        Text(text = "Reset", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
-fun QuoteCard(title: String, quote: String, author: String) {
-    Card() {
+    @Composable
+    fun StageInfo() {
         Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-
-                )
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = quote,
-                textAlign = TextAlign.Justify,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                text = "1/4",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary
             )
             Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = author,
-                style = MaterialTheme.typography.labelLarge,
-                textAlign = TextAlign.End,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                text = "Reset",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
-}
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
+    @Composable
+    fun QuoteCard(title: String, quote: String, author: String) {
+        var theQuoteOfTheDay = dbHandler.getQuotesList().random()
+        Log.e("QUOTE", "$theQuoteOfTheDay")
+        Card() {
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PomotimerTheme {
-        Greeting("Android")
+                    )
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = theQuoteOfTheDay.quote,
+                    textAlign = TextAlign.Justify,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = theQuoteOfTheDay.author,
+                    style = MaterialTheme.typography.labelLarge,
+                    textAlign = TextAlign.End,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun Greeting(name: String) {
+        Text(text = "Hello $name!")
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun DefaultPreview() {
+        PomotimerTheme {
+            Greeting("Android")
+        }
     }
 }
